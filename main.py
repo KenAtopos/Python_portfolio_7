@@ -3,12 +3,39 @@ from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField
 from wtforms.validators import DataRequired, URL
-import csv
 import os
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('MY_APP_SECRET_KEY')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///new-cafes-collection.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 Bootstrap(app)
+
+
+class Cafe(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), unique=True, nullable=False)
+    location = db.Column(db.String(250), unique=False, nullable=False)
+    open = db.Column(db.String(250), unique=False, nullable=False)
+    close = db.Column(db.String(250), unique=False, nullable=False)
+    coffee = db.Column(db.String(250), unique=False, nullable=False)
+    wifi = db.Column(db.String(250), unique=False, nullable=False)
+    power = db.Column(db.String(250), unique=False, nullable=False)
+
+    def __repr__(self):
+        return f'<Cafe {self.name}>'
+
+
+with app.app_context():
+    db.create_all()
+
+
+# new_cafe = Cafe(name="Mare Street Market", location="https://goo.gl/maps/ALR8iBiNN6tVfuAA8", open="8AM", close="13PM",
+#                 coffee="☕☕", wifi="💪💪💪", power="🔌🔌🔌")
+# db.session.add(new_cafe)
+# db.session.commit()
 
 
 class CafeForm(FlaskForm):
@@ -21,14 +48,6 @@ class CafeForm(FlaskForm):
     power_outlet_rating = SelectField(label='power outlet rating', choices=["✘", "🔌", "🔌🔌", "🔌🔌🔌", "🔌🔌🔌🔌", "🔌🔌🔌🔌🔌"], validators=[DataRequired()])
     submit = SubmitField(label='Submit')
 
-# Exercise:
-# add: Location URL, open time, closing time, coffee rating, wifi rating, power outlet rating fields
-# make coffee/wifi/power a select element with choice of 0 to 5.
-#e.g. You could use emojis ☕/💪/✘/🔌
-# make all fields required except submit
-# use a validator to check that the URL field has a URL entered.
-# ---------------------------------------------------------------------------
-
 
 # all Flask routes below
 @app.route("/")
@@ -36,35 +55,24 @@ def home():
     return render_template("index.html")
 
 
+@app.route('/cafes')
+def cafes():
+    all_cafes = db.session.query(Cafe).all()
+    return render_template('cafes.html', cafes=all_cafes)
+
+
 @app.route('/add', methods=["GET", "POST"])
 def add_cafe():
     form = CafeForm()
     new_row = form.cafe.data, form.location.data, form.open_time.data, form.closing_time.data, form.coffee_rating.data, form.wifi_rating.data, form.power_outlet_rating.data
     if form.validate_on_submit():
-        with open('cafe-data.csv', mode='a', encoding='utf-8') as csv_file:
-            csv_file.write(f"\n{form.cafe.data},"
-                           f"{form.location.data},"
-                           f"{form.open_time.data},"
-                           f"{form.closing_time.data},"
-                           f"{form.coffee_rating.data},"
-                           f"{form.wifi_rating.data},"
-                           f"{form.power_outlet_rating.data},"
-                           )
+        new_cafe = Cafe(name=form.cafe.data, location=form.location.data, open=form.open_time.data, close=form.closing_time.data,
+                        coffee=form.coffee_rating.data, wifi=form.wifi_rating.data, power=form.power_outlet_rating.data)
+        db.session.add(new_cafe)
+        db.session.commit()
+
         return redirect(url_for('cafes'))
-    # Exercise:
-    # Make the form write a new row into cafe-data.csv
-    # with if form.validate_on_submit()
     return render_template('add.html', form=form)
-
-
-@app.route('/cafes')
-def cafes():
-    with open('cafe-data.csv', newline='', encoding='utf-8') as csv_file:
-        csv_data = csv.reader(csv_file, delimiter=',')
-        list_of_rows = []
-        for row in csv_data:
-            list_of_rows.append(row)
-    return render_template('cafes.html', cafes=list_of_rows)
 
 
 if __name__ == '__main__':

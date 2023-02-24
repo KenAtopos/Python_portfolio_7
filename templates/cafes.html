@@ -16,32 +16,29 @@
       <h1>All Cafes</h1>
 
 	  <table class="table">
-          <!-- This is where you will write the code to render a Bootstrap 
-          Table that contains all the information from the 
-          cafe-data.csv file. -->
           <thead>
             <tr>
-                {% for i in cafes[0] %}
+                {% for i in cafes.name %}
                 <td>{{ i }}</td>
                 {% endfor %}
             </tr>
           </thead>
           <tbody>
-            {% for cafe in range(1, cafes |length) %}
+            {% for cafe in cafes %}
             <tr>
-                <td>{{ cafes[cafe][0] }}</td>
-                <td><a href="{{ cafes[cafe][1] }}">Maps Link</a></td>
-                <td>{{ cafes[cafe][2] }}</td>
-                <td>{{ cafes[cafe][3] }}</td>
-                <td>{{ cafes[cafe][4] }}</td>
-                <td>{{ cafes[cafe][5] }}</td>
-                <td>{{ cafes[cafe][6] }}</td>
+                <td>{{ cafe.name }}</td>
+                <td><a href="{{ cafe.location }}">Maps Link</a></td>
+                <td>{{ cafe.open }}</td>
+                <td>{{ cafe.close }}</td>
+                <td>{{ cafe.coffee }}</td>
+                <td>{{ cafe.wifi }}</td>
+                <td>{{ cafe.power }}</td>
             </tr>
             {% endfor %}
           </tbody>
   	  </table>
 
-      <p><a href="/">Return to home page</a></p>
+      <p><a href="/">Return to home page</a></p><p><a href="/add">Add new cafe</a></p>
 
     </div>
   </div>
