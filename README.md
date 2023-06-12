@@ -26,5 +26,3 @@ To get started with the website, follow these steps:
 1. Install the dependencies using `pip install -r requirements.txt`.
 2. Run the app with `python app.py`.
 3. Open the website by visiting http://localhost:5000 in your web browser.
-Contributing
-
